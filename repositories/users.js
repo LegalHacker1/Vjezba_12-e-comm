@@ -9,7 +9,7 @@ class usersRepository {
 
         this.filename = filename;
         try {
-        FileSystem.accessSync(this.filename);
+        fs.accessSync(this.filename);
     } catch (err) {
         fs.writeFileSync(this.filename, '[]');
      }
@@ -32,6 +32,7 @@ class usersRepository {
         // write the updated 'records' array back to this.filename
 
         await this.writeAll(records); 
+       
     }
 
     async writeAll(records) {
@@ -52,17 +53,40 @@ class usersRepository {
         const filteredRecords = records.filter(record => record.id !== id);
         await this.writeAll(filteredRecords);
     }
+
+    async update(id, attrs) {
+        const records = await this.getAll();
+        const record = records.find(record => record.id === id);
+
+        if (!record) {
+            throw new Error(`Record with id ${id} not found`);
+        }
+
+        // record === { email: 'test@test.com' }
+        // attrs === { password: 'mypassword' };
+        Object.assign(record, attrs);
+        // record === { email: 'test@test.com', password: 'mypassword'}
+
+        await this.writeAll(records);
+    }
+
+    async getOneBy(filters) {
+        const records = await this.getAll();
+
+        for (let record of records) {
+            let found = true;
+
+            for (let key in filters) {
+                if (record[key] !== filters[key]) {
+                    found = false;
+                }
+            }
+
+            if (found) {
+                return record;
+            }
+        }
+    }
 }
 
-const test = async () => {
-
-const repo = new usersRepository('users.json');
-
-await repo.delete('c6aa0d35');
-
-
-};
-
-test();
-
-// Must repair object this.filename, application needs more object added
+module.exports = new usersRepository('users.json');
