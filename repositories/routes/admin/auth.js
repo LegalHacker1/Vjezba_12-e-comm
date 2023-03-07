@@ -1,24 +1,22 @@
 const express = require('express');
+const { check } = require('express-validator');
+
 const usersRepo = require('../../../repositories/users');
+const signupTemplete = require('../../../views/admin/auth/signup');
+const signinTemplete = require('../../../views/admin/auth/signin');
 
 const router = express.Router();
 
 router.get('/signup', (req, res) => {
-    res.send(`
-    <div>
-        Your id is: ${req.session.userId}
-        <form method="POST">
-        <input name="email" placeholder="email" />
-        <input name="password" placeholder="password" />
-        <input name="passwordComfirmation" placeholder="password comfirmation" />
-        <button>Sign up</button>
-        </form>
-    </div>
-    `);
+    res.send(signupTemplete({ req }));
 });
 
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', [
+    check('email'),
+    check('password'),
+    check('passwordComfirmation')
+], async (req, res) => {
     const { email, password, passwordComfirmation} = req.body;
 
     const existingUser = await usersRepo.getOneBy({ email });
@@ -45,15 +43,7 @@ router.get('/signout', (req, res) => {
 });
 
 router.get('/signin', (req, res) => {
-    res.send(`
-    <div>
-    <form method="POST">
-    <input name="email" placeholder="email" />
-    <input name="password" placeholder="password" />
-    <button>Sign In</button>
-    </form>
-</div>
-    `);
+    res.send(signinTemplete());
 });
 
 router.post('/signin', async (req, res) => {
