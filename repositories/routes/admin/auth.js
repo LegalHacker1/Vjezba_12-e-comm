@@ -1,6 +1,6 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
 
+const { handleErrors } = require('./middlewares');
 const usersRepo = require('../../../repositories/users');
 const signupTemplete = require('../../../views/admin/auth/signup');
 const signinTemplete = require('../../../views/admin/auth/signin');
@@ -24,14 +24,9 @@ router.post('/signup', [
     requirePassword,
     requirePasswordComfirmation,
 
-], async (req, res) => {
-    const errors = validationResult(req);
-    
-    if (!errors.isEmpty()) {
-        return res.send(signupTemplete({ req, errors }));
-    }
+], handleErrors(signupTemplete), async (req, res) => {
 
-    const { email, password, passwordComfirmation} = req.body;
+    const { email, password } = req.body;
 
 
     // Create a user in our user repo to represident this person
@@ -55,12 +50,7 @@ router.get('/signin', (req, res) => {
 router.post('/signin', [
     requireEmailExists,
     requireValidPasswordForUser
-], async (req, res) => {
-    const errors = validationResult(req);
-    
-    if (!errors.isEmpty()) {
-        return res.send(signinTemplete({ errors }));
-    }
+], handleErrors(signinTemplete), async (req, res) => {
 
     const { email } = req.body;
 
